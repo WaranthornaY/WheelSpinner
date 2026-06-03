@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mega Premium Spinning Wheel</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: #1e293b;
+            --accent-color: #00f2fe;
+            --spin-gradient: linear-gradient(135deg, #0575e6, #00f2fe);
+            --winner-gradient: linear-gradient(135deg, #f857a6, #ff5858);
+            --delete-color: #ff3366;
+            --edit-color: #f39c12;
+            --neon-glow: 0 0 20px rgba(0, 242, 254, 0.6);
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: radial-gradient(circle at center, #1e1b4b 0%, #0f172a 100%);
+            margin: 0;
+            padding: 20px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* --- FLASHY HEADER --- */
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-top: 0;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            background: linear-gradient(to right, #00f2fe, #4facfe, #00f2fe);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shine 3s linear infinite;
+            filter: drop-shadow(0 2px 8px rgba(0,242,254,0.3));
+            letter-spacing: 2px;
+        }
+
+        @keyframes shine {
+            to { background-position: 200% center; }
+        }
+
+        /* --- CORNER ADMIN ACCESS --- */
+        .corner-admin-container {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            z-index: 1000;
+        }
+
+        .corner-btn {
+            background: rgba(30, 41, 59, 0.7);
+            color: #94a3b8;
+            border: 1px solid #334155;
+            padding: 12px 22px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+
+        .corner-btn:hover {
+            color: white;
+            border-color: var(--accent-color);
+            box-shadow: var(--neon-glow);
+            transform: translateY(-3px) scale(1.05);
+        }
+
+        /* --- FOOTER CREDITS --- */
+        .credits-footer {
+            margin-top: 35px;
+            text-align: center;
+            font-family: 'Segoe UI', sans-serif;
+            letter-spacing: 0.5px;
+        }
+
+        .credits-main {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #cbd5e1;
+            text-transform: uppercase;
+        }
+
+        .credits-sub {
+            font-size: 0.8rem;
+            font-weight: 400;
+            color: #64748b;
+            margin-top: 3px;
+            margin-bottom: 12px;
+        }
+
+        /* --- CANVA LINK BUTTON --- */
+        .canva-link-btn {
+            display: inline-block;
+            background: rgba(0, 242, 254, 0.1);
+            color: var(--accent-color);
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            padding: 6px 16px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            border-radius: 50px;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+
+        .canva-link-btn:hover {
+            background: var(--accent-color);
+            color: #0f172a;
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.5);
+            transform: translateY(-2px);
+        }
+
+        /* --- INTERFACE TRANSFORMATION SYSTEM --- */
+        .view-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 550px;
+            display: flex;
+            justify-content: center;
+            perspective: 1000px;
+        }
+
+        .hide {
+            display: none !important;
+        }
+
+        /* --- WHEEL VIEW (USER MODE) --- */
+        .wheel-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            animation: superPopIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 380px;
+            height: 380px;
+            margin-bottom: 35px;
+            border-radius: 50%;
+            padding: 8px;
+            background: linear-gradient(135deg, #334155 0%, #0f172a 100%);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .wheel-container.blur-spin #wheel {
+            filter: blur(1.5px);
+        }
+
+        .wheel-container.impact-slam {
+            animation: slamTremor 0.3s ease-out;
+        }
+
+        @keyframes slamTremor {
+            0% { transform: scale(1); }
+            30% { transform: scale(0.98) translateY(2px); }
+            60% { transform: scale(1.01) translateY(-1px); }
+            100% { transform: scale(1); }
+        }
+
+        .pointer {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 18px solid transparent;
+            border-right: 18px solid transparent;
+            border-top: 30px solid var(--delete-color);
+            z-index: 100;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4));
+        }
+
+        #wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            will-change: transform;
+        }
+
+        #spin-btn {
+            padding: 16px 60px;
+            font-size: 1.4rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #fff;
+            background: var(--spin-gradient);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(0, 242, 254, 0.4);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #spin-btn:hover:not(:disabled) {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(0, 242, 254, 0.7), var(--neon-glow);
+        }
+        #spin-btn:disabled { 
+            background: #475569; 
+            cursor: not-allowed; 
+            box-shadow: none; 
+            transform: scale(0.95);
+            color: #94a3b8;
+        }
+
+        /* --- WINNER OVERLAY POPUP --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(8, 10, 21, 0.85);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-box {
+            background: #1e1b4b;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            padding: 45px 40px;
+            border-radius: 24px;
+            text-align: center;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.8), 0 0 50px rgba(248, 87, 166, 0.3);
+            max-width: 460px;
+            width: 85%;
+            transform: scale(0.4) rotate(-5deg);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.4);
+            position: relative;
+        }
+
+        .modal-overlay.show .modal-box {
+            transform: scale(1) rotate(0deg);
+        }
+
+        .modal-box h3 {
+            margin: 0 0 12px 0;
+            color: #6366f1;
+            font-size: 1.3rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 700;
+        }
+
+        .modal-box h2 {
+            margin: 0 0 35px 0;
+            color: #fff;
+            font-size: 3rem;
+            font-weight: 900;
+            text-shadow: 0 0 20px rgba(255,255,255,0.4);
+            word-wrap: break-word;
+            line-height: 1.1;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .modal-btn {
+            padding: 14px 28px;
+            font-size: 1rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .modal-btn.again {
+            background: var(--spin-gradient);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3);
+        }
+        .modal-btn.again:hover { transform: translateY(-3px); box-shadow: var(--neon-glow); }
+
+        .modal-btn.remove {
+            background: var(--delete-color);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 51, 102, 0.3);
+        }
+        .modal-btn.remove:hover { transform: translateY(-3px); box-shadow: 0 0 20px rgba(255, 51, 102, 0.6); }
+
+        #confetti-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2001;
+        }
+
+        /* --- MODERN CYBERPUNK ADMIN DASHBOARD --- */
+        .admin-panel {
+            background: var(--panel-bg);
+            border: 1px solid #334155;
+            padding: 35px;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            width: 100%;
+            box-sizing: border-box;
+            animation: superPopIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #334155;
+            padding-bottom: 16px;
+            margin-bottom: 25px;
+        }
+
+        .admin-header h2 { margin: 0; font-size: 1.6rem; font-weight: 800; color: #f8fafc;}
+
+        .exit-btn {
+            background: transparent;
+            border: 1px solid #475569;
+            color: #94a3b8;
+            padding: 8px 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.2s;
+        }
+        .exit-btn:hover {
+            background: var(--delete-color);
+            color: white;
+            border-color: var(--delete-color);
+            box-shadow: 0 0 15px rgba(255, 51, 102, 0.4);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .input-group input[type="text"] {
+            flex: 1;
+            padding: 14px;
+            border-radius: 12px;
+            border: 2px solid #334155;
+            font-size: 1rem;
+            background: #0f172a;
+            color: white;
+            transition: all 0.3s;
+        }
+        .input-group input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.2);
+        }
+
+        .input-group input[type="color"] {
+            width: 55px;
+            height: 50px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            background: none;
+        }
+
+        .add-btn {
+            background: var(--spin-gradient);
+            color: white;
+            border: none;
+            padding: 0 24px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .options-list {
+            max-height: 300px;
+            overflow-y: auto;
+            background: #0f172a;
+            border-radius: 14px;
+            padding: 8px;
+            border: 1px solid #222d3d;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            border-bottom: 1px solid #1e293b;
+            gap: 10px;
+        }
+        .option-item:last-child { border-bottom: none; }
+
+        .option-info {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex: 1;
+        }
+
+        .target-checkbox-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-right: 5px;
+        }
+
+        .target-checkbox {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--accent-color);
+            cursor: pointer;
+            transform: scale(1.2);
+        }
+
+        .color-preview {
+            width: 24px;
+            height: 24px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .edit-btn { background: #334155; color: #e2e8f0; border: none; padding: 7px 14px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 700; transition: background 0.2s;}
+        .edit-btn:hover { background: var(--edit-color); color: white;}
+        .delete-btn { background: rgba(255, 51, 102, 0.1); color: var(--delete-color); border: none; padding: 7px 14px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 700; transition: all 0.2s;}
+        .delete-btn:hover { background: var(--delete-color); color: white; }
+        .save-btn { background: var(--accent-color); color: #0f172a; border: none; padding: 7px 14px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 700;}
+        
+        .inline-edit-input {
+            flex: 1;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid var(--edit-color);
+            background: #1e293b;
+            color: white;
+            font-size: 0.95rem;
+        }
+        .inline-edit-color {
+            width: 32px;
+            height: 32px;
+            border: none;
+            cursor: pointer;
+            background: none;
+        }
+
+        @keyframes superPopIn {
+            0% { opacity: 0; transform: scale(0.8) translateY(30px) rotateX(-15deg); }
+            100% { opacity: 1; transform: scale(1) translateY(0) rotateX(0deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="corner-admin-container">
+        <button id="toggle-view-btn" class="corner-btn">🔒 Admin Portal</button>
+    </div>
+    
+    <div class="view-wrapper">
+        
+        <div id="wheel-view" class="wheel-section">
+            <h1>Spinning Wheel</h1>
+
+            <div class="wheel-container" id="wheel-box-wrapper">
+                <div class="pointer"></div>
+                <canvas id="wheel" width="400" height="400"></canvas>
+            </div>
+            <button id="spin-btn">SPIN WHEEL</button>
+
+            <div class="credits-footer">
+                <div class="credits-main">Made by Win</div>
+                <div class="credits-sub">Made in Thailand</div>
+                <a href="https://winnythai.my.canva.site/more-information" target="_blank" rel="noopener noreferrer" class="canva-link-btn">ℹ️ More Info And Credits</a>
+            </div>
+        </div>
+
+        <div id="admin-view" class="admin-panel hide">
+            <div class="admin-header">
+                <h2>Manage Wheel Segments</h2>
+                <button class="exit-btn" id="close-admin-btn">Exit Admin</button>
+            </div>
+            
+            <div class="input-group">
+                <input type="text" id="new-option-text" placeholder="Add custom slot prize name...">
+                <input type="color" id="new-option-color" value="#00f2fe">
+                <button class="add-btn" id="add-btn">Add New</button>
+            </div>
+
+            <div style="margin-bottom: 10px; font-size: 0.85rem; color: #94a3b8; font-weight: 600;">
+                🎯 Check squares to restrict landing targets (Multiple allowed. Leave all empty to spin normally):
+            </div>
+
+            <div class="options-list" id="options-list">
+                </div>
+        </div>
+
+    </div>
+
+    <div id="result-modal" class="modal-overlay">
+        <div class="modal-box">
+            <h3>🎉 Congratulations 🎉</h3>
+            <h2 id="modal-winner-text">Winner Name</h2>
+            
+            <div class="modal-actions">
+                <button class="modal-btn again" id="modal-again-btn">🔄 Spin Again</button>
+                <button class="modal-btn remove" id="modal-remove-btn">🗑️ Remove &amp; Spin</button>
+            </div>
+        </div>
+        <canvas id="confetti-canvas"></canvas>
+    </div>
+
+    <script>
+        let segments = [
+            { text: "Option 1", color: "#ff3366", isTarget: false },
+            { text: "Option 2", color: "#ff6600", isTarget: false },
+            { text: "Option 3", color: "#f1c40f", isTarget: false },
+            { text: "Option 4", color: "#00f2fe", isTarget: false },
+            { text: "Option 5", color: "#9b59b6", isTarget: false },
+            { text: "Option 6", color: "#3498db", isTarget: false }
+        ];
+
+        const PASSWORD = "AdminBOSS";
+
+        const canvas = document.getElementById('wheel');
+        const ctx = canvas.getContext('2d');
+        const wheelBoxWrapper = document.getElementById('wheel-box-wrapper');
+        const spinBtn = document.getElementById('spin-btn');
+        const optionsList = document.getElementById('options-list');
+        const addBtn = document.getElementById('add-btn');
+
+        const toggleViewBtn = document.getElementById('toggle-view-btn');
+        const closeAdminBtn = document.getElementById('close-admin-btn');
+        const wheelView = document.getElementById('wheel-view');
+        const adminView = document.getElementById('admin-view');
+
+        const resultModal = document.getElementById('result-modal');
+        const modalWinnerText = document.getElementById('modal-winner-text');
+        const modalAgainBtn = document.getElementById('modal-again-btn');
+        const modalRemoveBtn = document.getElementById('modal-remove-btn');
+        const confettiCanvas = document.getElementById('confetti-canvas');
+        const confettiCtx = confettiCanvas.getContext('2d');
+
+        let currentRotation = 0; 
+        let isSpinning = false;
+        let editingIndex = null;
+        let currentWinningIndex = null;
+        let confettiParticles = [];
+        let confettiAnimationId = null;
+
+        // Web Audio Synthesizer Setup
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playClickSound(vol = 1) {
+            if (!audioCtx) return;
+            try {
+                let osc = audioCtx.createOscillator();
+                let gainNode = audioCtx.createGain();
+                let filter = audioCtx.createBiquadFilter();
+                
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.015);
+                
+                filter.type = 'highpass';
+                filter.frequency.setValueAtTime(800, audioCtx.currentTime);
+                
+                gainNode.gain.setValueAtTime(vol * 0.35, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.015);
+                
+                osc.connect(filter);
+                filter.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.02);
+            } catch(e){}
+        }
+
+        function playThudSound(pitch = 140, duration = 0.18, vol = 1) {
+            if (!audioCtx) return;
+            try {
+                let osc = audioCtx.createOscillator();
+                let gainNode = audioCtx.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(pitch, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(45, audioCtx.currentTime + duration);
+                
+                gainNode.gain.setValueAtTime(vol * 0.45, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration + 0.02);
+            } catch(e){}
+        }
+
+        function playCongratsSound() {
+            if (!audioCtx) return;
+            try {
+                const now = audioCtx.currentTime;
+                
+                const melody = [
+                    { note: 523.25, timeOffset: 0.00, dur: 0.10 }, // C5
+                    { note: 659.25, timeOffset: 0.08, dur: 0.10 }, // E5
+                    { note: 783.99, timeOffset: 0.16, dur: 0.10 }, // G5
+                    { note: 1046.50, timeOffset: 0.24, dur: 0.15 }, // C6
+                    { note: 783.99, timeOffset: 0.36, dur: 0.10 }, // G5
+                    { note: 1046.50, timeOffset: 0.44, dur: 0.40 }, // C6
+                    { note: 1318.51, timeOffset: 0.44, dur: 0.40 }  // E6
+                ];
+
+                melody.forEach(item => {
+                    let osc = audioCtx.createOscillator();
+                    let gainNode = audioCtx.createGain();
+                    
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(item.note, now + item.timeOffset);
+                    
+                    gainNode.gain.setValueAtTime(0, now + item.timeOffset);
+                    gainNode.gain.linearRampToValueAtTime(0.15, now + item.timeOffset + 0.02);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, now + item.timeOffset + item.dur);
+                    
+                    osc.connect(gainNode);
+                    gainNode.connect(audioCtx.destination);
+                    
+                    osc.start(now + item.timeOffset);
+                    osc.stop(now + item.timeOffset + item.dur + 0.02);
+                });
+            } catch(e){}
+        }
+
+        toggleViewBtn.addEventListener('click', () => {
+            if (isSpinning) return;
+            initAudio();
+            const userInput = prompt("Enter the Admin Password to access configuration settings:");
+            if (userInput === PASSWORD) {
+                switchToAdminView();
+            } else if (userInput !== null) {
+                alert("❌ Access Denied: Incorrect Password.");
+            }
+        });
+
+        closeAdminBtn.addEventListener('click', () => {
+            editingIndex = null;
+            adminView.classList.add('hide');
+            wheelView.classList.remove('hide');
+            toggleViewBtn.classList.remove('hide');
+            drawWheel();
+        });
+
+        function switchToAdminView() {
+            wheelView.classList.add('hide');
+            toggleViewBtn.classList.add('hide');
+            adminView.classList.remove('hide');
+            renderAdminList();
+        }
+
+        function drawWheel() {
+            const numSegments = segments.length;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (numSegments === 0) {
+                ctx.fillStyle = "#334155";
+                ctx.beginPath();
+                ctx.arc(200, 200, 200, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.fillStyle = "#94a3b8";
+                ctx.font = "bold 16px sans-serif";
+                ctx.textAlign = "center";
+                ctx.fillText("No options left! Access Admin.", 200, 200);
+                return;
+            }
+
+            const segmentAngle = (2 * Math.PI) / numSegments;
+
+            segments.forEach((seg, i) => {
+                const angle = i * segmentAngle;
+                
+                ctx.beginPath();
+                ctx.fillStyle = seg.color;
+                ctx.moveTo(200, 200);
+                ctx.arc(200, 200, 196, angle, angle + segmentAngle);
+                ctx.lineTo(200, 200);
+                ctx.fill();
+
+                ctx.strokeStyle = '#0f172a';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                ctx.save();
+                ctx.translate(200, 200);
+                ctx.rotate(angle + segmentAngle / 2);
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 15px sans-serif";
+                ctx.textAlign = "right";
+                ctx.shadowColor = "rgba(0, 0, 0, 0.4)";
+                ctx.shadowBlur = 4;
+                ctx.fillText(seg.text, 175, 5);
+                ctx.restore();
+            });
+
+            ctx.beginPath();
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+            ctx.shadowBlur = 10;
+            ctx.arc(200, 200, 14, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+
+        function renderAdminList() {
+            optionsList.innerHTML = '';
+            segments.forEach((seg, index) => {
+                const item = document.createElement('div');
+                item.className = 'option-item';
+
+                if (editingIndex === index) {
+                    item.innerHTML = `
+                        <div class="option-info">
+                            <input type="color" class="inline-edit-color" id="edit-color-${index}" value="${seg.color}">
+                            <input type="text" class="inline-edit-input" id="edit-text-${index}" value="${seg.text}">
+                        </div>
+                        <div class="action-btns">
+                            <button class="save-btn" onclick="saveOption(${index})">Save</button>
+                            <button class="delete-btn" onclick="cancelEdit()">Cancel</button>
+                        </div>
+                    `;
+                } else {
+                    item.innerHTML = `
+                        <div class="option-info">
+                            <div class="target-checkbox-container">
+                                <input type="checkbox" class="target-checkbox" id="target-check-${index}" ${seg.isTarget ? 'checked' : ''} onchange="toggleTarget(${index}, this.checked)">
+                            </div>
+                            <div class="color-preview" style="background-color: ${seg.color}"></div>
+                            <span>${seg.text}</span>
+                        </div>
+                        <div class="action-btns">
+                            <button class="edit-btn" onclick="startEdit(${index})">Edit</button>
+                            <button class="delete-btn" onclick="deleteOption(${index})">Remove</button>
+                        </div>
+                    `;
+                }
+                optionsList.appendChild(item);
+            });
+            drawWheel();
+        }
+
+        window.toggleTarget = function(index, isChecked) {
+            segments[index].isTarget = isChecked;
+        };
+
+        window.startEdit = function(index) { editingIndex = index; renderAdminList(); };
+        window.cancelEdit = function() { editingIndex = null; renderAdminList(); };
+
+        window.saveOption = function(index) {
+            const txt = document.getElementById(`edit-text-${index}`).value.trim();
+            const col = document.getElementById(`edit-color-${index}`).value;
+            if (txt !== '') {
+                segments[index].text = txt;
+                segments[index].color = col;
+                editingIndex = null;
+                renderAdminList();
+            }
+        };
+
+        window.deleteOption = function(index) {
+            segments.splice(index, 1);
+            if (editingIndex === index) editingIndex = null;
+            renderAdminList();
+        };
+
+        addBtn.addEventListener('click', () => {
+            const txt = document.getElementById('new-option-text');
+            const col = document.getElementById('new-option-color');
+            if (txt.value.trim() !== '') {
+                segments.push({ text: txt.value.trim(), color: col.value, isTarget: false });
+                txt.value = '';
+                renderAdminList();
+            }
+        });
+
+        function spin() {
+            if (segments.length === 0 || isSpinning) return;
+            initAudio();
+
+            isSpinning = true;
+            spinBtn.disabled = true;
+            toggleViewBtn.disabled = true;
+
+            wheelBoxWrapper.classList.add('blur-spin');
+
+            const numSegments = segments.length;
+            const segmentArcDegrees = 360 / numSegments;
+
+            let qualifiedIndices = [];
+            segments.forEach((seg, i) => {
+                if (seg.isTarget) qualifiedIndices.push(i);
+            });
+            if (qualifiedIndices.length === 0) {
+                qualifiedIndices = segments.map((_, i) => i);
+            }
+
+            const chosenWinnerIndex = qualifiedIndices[Math.floor(Math.random() * qualifiedIndices.length)];
+            const innerSliceTargetFactor = Math.random(); 
+
+            let maxBounceAmplitude = 0;
+            let bounceDirectionFactor = 1;
+
+            if (innerSliceTargetFactor >= 0.40 && innerSliceTargetFactor <= 0.60) {
+                maxBounceAmplitude = 0;
+            } else if (innerSliceTargetFactor < 0.40) {
+                maxBounceAmplitude = ((0.40 - innerSliceTargetFactor) / 0.40) * 4.5;
+                bounceDirectionFactor = -1; 
+            } else {
+                maxBounceAmplitude = ((innerSliceTargetFactor - 0.60) / 0.40) * 4.5;
+                bounceDirectionFactor = 1; 
+            }
+
+            const exactLocationDegrees = (chosenWinnerIndex * segmentArcDegrees) + (innerSliceTargetFactor * segmentArcDegrees);
+            const targetStopAngleDegrees = (360 - exactLocationDegrees + 270) % 360;
+
+            const currentNormRotation = currentRotation % 360;
+            const fullSpinsToAdd = 5 * 360; 
+            
+            const finalExactRotation = currentRotation + fullSpinsToAdd + ((targetStopAngleDegrees - currentNormRotation + 360) % 360);
+            const totalDistance = finalExactRotation - currentRotation;
+            const startRotationPosition = currentRotation;
+
+            const totalDuration = 5500; 
+            const startTime = performance.now();
+
+            let lastSegmentBoundaryHit = Math.floor((startRotationPosition - 270) / segmentArcDegrees);
+            let hasPlayedTan = false;
+            let hasPlayedTam = false;
+
+            function animateWheel(now) {
+                const elapsed = now - startTime;
+                const progress = Math.min(elapsed / totalDuration, 1);
+
+                let frameRotation;
+
+                if (progress < 0.96) {
+                    const t = progress / 0.96;
+                    const easeOutCurve = 1 - Math.pow(1 - t, 3);
+                    frameRotation = startRotationPosition + (totalDistance * easeOutCurve);
+
+                    let currentSegmentTracking = Math.floor((frameRotation - 270) / segmentArcDegrees);
+                    if (currentSegmentTracking !== lastSegmentBoundaryHit) {
+                        let currentVelocityVolume = 1 - (progress * 0.82); 
+                        playClickSound(currentVelocityVolume);
+                        lastSegmentBoundaryHit = currentSegmentTracking;
+                    }
+                } else {
+                    const t = (progress - 0.96) / (1 - 0.96);
+                    
+                    if (maxBounceAmplitude === 0) {
+                        frameRotation = finalExactRotation;
+                        if (!hasPlayedTan) {
+                            playThudSound(130, 0.15, 1);
+                            hasPlayedTan = true;
+                        }
+                    } else {
+                        const frequency = 2.5 * Math.PI; 
+                        const decay = Math.exp(-t * 3.5);
+                        
+                        const waveValue = Math.cos(t * frequency);
+                        const springOffset = -maxBounceAmplitude * bounceDirectionFactor * waveValue * decay;
+                        frameRotation = finalExactRotation + springOffset;
+
+                        if (t > 0.05 && !hasPlayedTan) {
+                            playThudSound(150, 0.22, 1.2); 
+                            hasPlayedTan = true;
+                        }
+                        if (t > 0.42 && !hasPlayedTam) {
+                            playThudSound(105, 0.18, 0.7); 
+                            hasPlayedTam = true;
+                        }
+                    }
+                }
+
+                canvas.style.transform = `rotate(${frameRotation}deg)`;
+
+                if (progress > 0.70) {
+                    wheelBoxWrapper.classList.remove('blur-spin');
+                }
+
+                if (progress < 1) {
+                    requestAnimationFrame(animateWheel);
+                } else {
+                    currentRotation = finalExactRotation;
+                    canvas.style.transform = `rotate(${currentRotation}deg)`;
+                    
+                    wheelBoxWrapper.classList.add('impact-slam');
+                    currentWinningIndex = chosenWinnerIndex;
+                    
+                    setTimeout(() => {
+                        wheelBoxWrapper.classList.remove('impact-slam');
+                        modalWinnerText.innerText = segments[currentWinningIndex].text;
+                        resultModal.classList.add('show');
+                        
+                        playCongratsSound();
+                        startConfetti();
+                        
+                        isSpinning = false;
+                        spinBtn.disabled = false;
+                        toggleViewBtn.disabled = false;
+                        hasPlayedTan = false;
+                        hasPlayedTam = false;
+                    }, 150);
+                }
+            }
+
+            requestAnimationFrame(animateWheel);
+        }
+
+        function resizeConfettiCanvas() {
+            confettiCanvas.width = window.innerWidth;
+            confettiCanvas.height = window.innerHeight;
+        }
+
+        function startConfetti() {
+            resizeConfettiCanvas();
+            confettiParticles = [];
+            const colors = ['#00f2fe', '#ff3366', '#f1c40f', '#2ecc71', '#9b59b6', '#ff6600'];
+            
+            for (let i = 0; i < 120; i++) {
+                confettiParticles.push({
+                    x: confettiCanvas.width / 2,
+                    y: confettiCanvas.height / 2 + 50,
+                    radius: Math.random() * 5 + 4,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    vx: (Math.random() - 0.5) * 15,
+                    vy: (Math.random() - 0.7) * 18 - 5,
+                    gravity: 0.45,
+                    rotation: Math.random() * 360,
+                    rotationSpeed: (Math.random() - 0.5) * 10
+                });
+            }
+            if (confettiAnimationId) cancelAnimationFrame(confettiAnimationId);
+            animateConfetti();
+        }
+
+        function animateConfetti() {
+            confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+            let alive = false;
+
+            confettiParticles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += p.gravity;
+                p.rotation += p.rotationSpeed;
+
+                if (p.y < confettiCanvas.height) alive = true;
+
+                confettiCtx.save();
+                confettiCtx.translate(p.x, p.y);
+                confettiCtx.rotate(p.rotation * Math.PI / 180);
+                confettiCtx.fillStyle = p.color;
+                confettiCtx.fillRect(-p.radius, -p.radius, p.radius * 2, p.radius * 1.5);
+                confettiCtx.restore();
+            });
+
+            if (alive) {
+                confettiAnimationId = requestAnimationFrame(animateConfetti);
+            }
+        }
+
+        modalAgainBtn.addEventListener('click', () => {
+            resultModal.classList.remove('show');
+            cancelAnimationFrame(confettiAnimationId);
+            confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+            currentWinningIndex = null;
+        });
+
+        modalRemoveBtn.addEventListener('click', () => {
+            if (currentWinningIndex !== null) {
+                segments.splice(currentWinningIndex, 1);
+                drawWheel();
+                currentWinningIndex = null;
+            }
+            resultModal.classList.remove('show');
+            cancelAnimationFrame(confettiAnimationId);
+            confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+        });
+
+        window.addEventListener('resize', resizeConfettiCanvas);
+        spinBtn.addEventListener('click', () => {
+            initAudio();
+            spin();
+        });
+
+        drawWheel();
+    </script>
+</body>
+</html>
